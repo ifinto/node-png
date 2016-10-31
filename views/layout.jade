@@ -1,0 +1,22 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/bootstrap.min.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src="https://code.jquery.com/jquery-2.2.4.js")
+    script(src="/javascripts/app.js")
+  body
+    .navbar.navbar-default
+      .container
+        .navbar-header
+          a.navbar-brand ☘
+        .nav.navbar-nav
+          li
+            a(href='/') Home
+          li
+            a(href='/raw') Raw data
+
+    .container
+      .sm-12
+        block content

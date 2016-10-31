@@ -1,0 +1,26 @@
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.raw-data-input {
+	display: block;
+	width: 100%;
+	height: 400px;
+}
+
+.spinner {
+	display: none;
+	width: 32px;
+	height: 32px;
+	margin: 0 20px 0 0;
+	background: url('/images/spinner.gif') 0 0 no-repeat;
+	background-size: 100%;
+	vertical-align: middle;
+}
+.spinner.active {
+	display: inline-block;
+}
