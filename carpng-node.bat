@@ -1,0 +1,1 @@
+git pull && node c:/node-png/bin/www
