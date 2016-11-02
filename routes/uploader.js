@@ -4,7 +4,6 @@ var router = express.Router()
 var mysql = require('mysql')
 var fs = require('fs')
 var Ftp = require('ftp')
-var im = require('imagemagick')
 var request = require('request')
 var Promise = require("bluebird")
 
@@ -111,23 +110,27 @@ router.post('/parse', function(req, res, next) {
             })
 
             function convertImage(src, index) {
-              im.convert([
-                tempFiles.full, 
-                '-resize', 
-                '150x150', 
-                '-background',
-                'transparent',
-                '-gravity',
-                'center',
-                '-extent',
-                '150x150',
-                tempFiles.thumb
-              ], 
-                function(err, stdout){
-                  if (err) throw err
+              run_cmd(
+                'magick', [
+                  'convert',
+                  tempFiles.full,
+                  '-resize', 
+                  '150x150', 
+                  '-background',
+                  'transparent',
+                  '-gravity',
+                  'center',
+                  '-extent',
+                  '150x150',
+                  tempFiles.thumb
+                ],
+                function () {
+                  console.log('=============')
+                  console.log(arguments)
+                  console.log('=============')
                   storeByFtp(src, index)
                 }
-              )
+              );
             }
 
             function storeByFtp(src, index) {
@@ -199,6 +202,15 @@ router.post('/parse', function(req, res, next) {
     }  
   }
 })
+
+
+function run_cmd(cmd, args, end) {
+  var spawn = require('child_process').spawn,
+      child = spawn(cmd, args),
+      me = this;
+  child.stdout.on('end', end);
+}
+
 
 
 module.exports = router
