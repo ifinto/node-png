@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var uploader = require('./routes/uploader');
+var convertThumbs = require('./routes/convert-thumbs');
 
 var app = express();
 
@@ -24,6 +25,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/uploader', uploader);
+app.use('/convert-thumbs', convertThumbs);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
