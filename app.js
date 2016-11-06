@@ -25,7 +25,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/raw', uploader);
+app.use('/raw', raw);
 app.use('/uploader', uploader);
 app.use('/convert-thumbs', convertThumbs);
 

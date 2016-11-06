@@ -231,6 +231,7 @@ router.post('/send', function(req, res, next) {
               if (!!el & el !== '') arr.push('('+ postId +','+ el +', 0)')
               return arr
             }, [])
+            valuesQuery = _.uniq(valuesQuery)
 
             if (valuesQuery.length === 0) {
               resolve()
