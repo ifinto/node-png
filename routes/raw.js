@@ -1,5 +1,4 @@
 'use strict'
-var _ = require('underscore')
 var express = require('express')
 var router = express.Router()
 var mysql = require('mysql')
@@ -8,77 +7,12 @@ var Ftp = require('ftp')
 var request = require('request')
 var Promise = require("bluebird")
 
-var mySqlConnection = mysql.createConnection({
-  host     : 'db14.freehost.com.ua',
-  user     : 'malyniak_carpng',
-  password : 'OQoQeuNuJ',
-  database : 'malyniak_carpng'
-})
-//mySqlConnection.connect()
-
-
 router.get('/', function(req, res, next) {
-  res.render('uploader', {
-    title: 'Uploader'
-  })
+  res.render('add_raw_data', { title: 'Raw data' })
 })
 
-router.get('/taxonomy', function(req, res, next) {
-
-  //mySqlConnection.connect()
-  var termsQueries = ['SELECT * FROM  `wp_terms`', 'SELECT * FROM  `wp_term_taxonomy`']
-  Promise.map(termsQueries, function (query) {
-    return new Promise((resolve, reject) => {
-      mySqlConnection.query(query, function(err, rows, fields) {
-        if (err) throw err
-        resolve(rows)
-      })
-    })
-  }).then((results) => {
-    var terms         = results[0]
-    var term_taxonomy = results[1]
-
-    var categories = _.reduce(terms, (arr, el) => {
-      var found = _.find(term_taxonomy, (_el) => {
-        return _el.term_id === el.term_id && _el.taxonomy === 'category'
-      })
-      if (found) arr.push(_.extend({}, el, found))
-      return arr
-    }, [])
-
-    var tags = _.reduce(terms, (arr, el) => {
-      var found = _.find(term_taxonomy, (_el) => {
-        return _el.term_id === el.term_id && _el.taxonomy === 'post_tag'
-      })
-      if (found) arr.push(_.extend({}, el, found))
-      return arr
-    }, [])
-
-    res.json({
-      categories: categories,
-      tags: tags
-    })
-
-    //mySqlConnection.end()
-  })
-})
-
-router.post('/send', function(req, res, next) {
-  var mySqlConnection = mysql.createConnection({
-    host     : 'db14.freehost.com.ua',
-    user     : 'malyniak_carpng',
-    password : 'OQoQeuNuJ',
-    database : 'malyniak_carpng'
-  })
-
-
-  var dataArray = [{
-    title: req.body.title,
-    tags: req.body.tags || '',
-    categories: req.body.categories || '',
-    status: req.body.status || 'draft',
-    sources: JSON.parse(req.body.images)
-  }]
+router.post('/parse', function(req, res, next) {
+  var dataArray = []
   var tempFiles = {
     full: 'temp.png',
     thumb: 'temp-thumb.png'
@@ -86,9 +20,15 @@ router.post('/send', function(req, res, next) {
   var imgName = 'truck-you.png'
   var imgAlt = 'Alt text for truck'
   var ftp = new Ftp()
+  var mySqlConnection = mysql.createConnection({
+    host     : 'db14.freehost.com.ua',
+    user     : 'malyniak_carpng',
+    password : 'OQoQeuNuJ',
+    database : 'malyniak_carpng'
+  })
 
   ftp.on('ready', function() {
-    operateData();
+    parseRawData(req.body.rawData)
   })
 
   ftp.connect({
@@ -97,7 +37,34 @@ router.post('/send', function(req, res, next) {
     password : 'OQoQeuNuJ'
   })
 
-  //mySqlConnection.connect()
+  mySqlConnection.connect()
+
+  function parseRawData(data) {
+    var matches = data.split('\n\n')
+    if (!matches || matches.length === 0) {
+      res.sendStatus(500)
+      return
+    }
+
+    matches.forEach(function (el, i, arr) {
+      var m = el.split('\n')
+      if (m.length === 0) return
+
+      var sources = m.slice(1, m.length)
+
+      if (!sources || sources.length == 0) {
+        console.log('sources not found!')
+        return
+      }
+
+      dataArray.push({
+        title: m[0],
+        sources: sources
+      })
+    })
+
+    operateData();
+  }
 
   function operateData() {
     Promise.mapSeries(dataArray, operatePosts)
@@ -105,7 +72,7 @@ router.post('/send', function(req, res, next) {
         console.log('closing ftp connection')
         console.log('closing MySQL connection')
         ftp.end()
-        //mySqlConnection.end()
+        mySqlConnection.end()
 
         res.sendStatus(200)
       })
@@ -123,10 +90,7 @@ router.post('/send', function(req, res, next) {
 
         Promise.mapSeries(post.sources, operateSource)
           .then(() => {
-            return insertPostData()
-          })
-          .then((postId) => {
-            return insertTaxonomyData(postId)
+            insertRawData()
           })
           .then(() => {
             resolve()
@@ -194,8 +158,7 @@ router.post('/send', function(req, res, next) {
           })
         }
 
-        function insertPostData() {
-          console.log('inside insertPostData')
+        function insertRawData() {
           return new Promise((resolve, reject) => {
             var query = insertQuery('wp_posts', {
               'post_author': 2,
@@ -203,7 +166,7 @@ router.post('/send', function(req, res, next) {
               'post_date_gmt': post.date,
               'post_content': post.content.join('\n'),
               'post_title': post.title,
-              'post_status': post.status,
+              'post_status': 'publish',
               'comment_status': 'closed',
               'ping_status': 'closed',
               'post_name': post.name,
@@ -219,47 +182,12 @@ router.post('/send', function(req, res, next) {
             mySqlConnection.query(query, function(err, rows, fields) {
               if (err) throw err
               console.log('MySQL query success; rows: ', rows.affectedRows)
-              resolve(rows.insertId)
-            })
-          })
-        }
-
-        function insertTaxonomyData(postId) {
-          return new Promise((resolve, reject) => {
-            var taxonomyList = post.categories.split(', ').concat(post.tags.split(', '))
-            var valuesQuery = taxonomyList.reduce((arr, el) => {
-              if (!!el & el !== '') arr.push('('+ postId +','+ el +', 0)')
-              return arr
-            }, [])
-
-            if (valuesQuery.length === 0) {
-              resolve()
-              return
-            }
-            var headers = ['`object_id`','`term_taxonomy_id`','`term_order`']
-            var query = 'INSERT INTO wp_term_relationships ('+ headers.join(',') +') VALUES '+ valuesQuery.join(',')
-console.log('qqqqqq')
-console.log(valuesQuery)
-            mySqlConnection.query(query, function(err, rows, fields) {
-              if (err) throw err
-              console.log('MySQL query success; rows: ', rows.affectedRows)
               resolve()
             })
           })
         }
 
         function insertQuery(table, params) {
-          var headers = []
-          var values = []
-
-          Object.keys(params).forEach(function (key) {
-            headers.push('`' +key +'`')
-            values.push('\'' +params[key] +'\'')
-          })
-          return 'INSERT INTO `' + table + '` ('+ headers.join(',') +') VALUES ('+ values.join(',') +')'
-        }    
-          
-        function insertMultipleQuery(table, params) {
           var headers = []
           var values = []
 

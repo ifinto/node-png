@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var uploader = require('./routes/uploader');
+var raw = require('./routes/raw');
 var convertThumbs = require('./routes/convert-thumbs');
 
 var app = express();
@@ -24,6 +25,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
+app.use('/raw', uploader);
 app.use('/uploader', uploader);
 app.use('/convert-thumbs', convertThumbs);
 

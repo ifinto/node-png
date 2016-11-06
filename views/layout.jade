@@ -3,8 +3,18 @@ html
   head
     title= title
     link(rel='stylesheet', href='/stylesheets/bootstrap.min.css')
+    link(rel='stylesheet', href='/stylesheets/tokenfield-typeahead.css')
+    link(rel='stylesheet', href='/stylesheets/bootstrap-tokenfield.css')
+    link(rel='stylesheet', href='/stylesheets/jquery-ui.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
-    script(src="https://code.jquery.com/jquery-2.2.4.js")
+    script(src="/javascripts/vendor/jquery-2.2.4.js")
+    script(src="/javascripts/vendor/jquery-ui.js")
+    script(src="/javascripts/vendor/bootstrap.js")
+    script(src="/javascripts/vendor/bootstrap-tokenfield.js")
+    script(src="/javascripts/vendor/underscore.js")
+    script(src="/javascripts/vendor/backbone.js")
+    script(src="/javascripts/vendor/backbone.radio.js")
+    script(src="/javascripts/vendor/backbone.marionette.js")
     script(src="/javascripts/app.js")
   body
     .navbar.navbar-default
@@ -20,3 +30,7 @@ html
     .container
       .sm-12
         block content
+
+
+
+

@@ -1,1 +1,1 @@
-git pull && node c:/node-png/bin/www
+git pull && npm install && node c:/node-png/bin/www

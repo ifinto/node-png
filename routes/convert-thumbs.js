@@ -36,8 +36,8 @@ router.get('/', function(req, res, next) {
           'center',
           '-extent',
           '300x300', 
-          '-type', 
-          'Palette', 
+          // '-type', 
+          // 'Palette', 
           folders.dist + src
         ],
         function () {

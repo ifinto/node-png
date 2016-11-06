@@ -1,0 +1,26 @@
+extends layout
+
+block content
+  h1= title
+  .js-uploader-form
+    .js-form-group
+      .form-group.row
+        .col-sm-10
+          input.form-control.js-title(placeholder='Title')
+        .col-sm-2
+          select.form-control.js-status
+            option(selected) draft
+            option publish
+      .form-group.row
+        .col-sm-6
+          input.form-control.js-categories(placeholder='categories')
+        .col-sm-6
+          input.form-control.js-tags(placeholder='tags')
+    .form-group.text-right
+      .spinner.js-spinner
+      button.btn.btn-primary.btn-lg.js-submit Submit
+
+    script#image-tpl(type='text/template')
+      .form-group
+        input.form-control.js-image(placeholder='Image Link')
+
