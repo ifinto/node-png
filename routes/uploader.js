@@ -239,8 +239,7 @@ router.post('/send', function(req, res, next) {
             }
             var headers = ['`object_id`','`term_taxonomy_id`','`term_order`']
             var query = 'INSERT INTO wp_term_relationships ('+ headers.join(',') +') VALUES '+ valuesQuery.join(',')
-console.log('qqqqqq')
-console.log(valuesQuery)
+
             mySqlConnection.query(query, function(err, rows, fields) {
               if (err) throw err
               console.log('MySQL query success; rows: ', rows.affectedRows)
