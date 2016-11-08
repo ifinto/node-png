@@ -17,8 +17,6 @@ router.post('/parse', function(req, res, next) {
     full: 'temp.png',
     thumb: 'temp-thumb.png'
   }
-  var imgName = 'truck-you.png'
-  var imgAlt = 'Alt text for truck'
   var ftp = new Ftp()
   var mySqlConnection = mysql.createConnection({
     host     : 'db14.freehost.com.ua',
@@ -113,8 +111,7 @@ router.post('/parse', function(req, res, next) {
               var args = []
               if (process.env.SYSTEM == 'ubuntu') {
                 args = [
-                  'magick', [
-                    'convert',
+                  'convert', [
                     tempFiles.full,
                     '-resize', 
                     '300x300', 
@@ -129,7 +126,8 @@ router.post('/parse', function(req, res, next) {
                 ]
               } else {
                 args = [
-                  'convert', [
+                  'magick', [
+                    'convert',
                     tempFiles.full,
                     '-resize', 
                     '300x300', 
