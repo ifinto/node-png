@@ -127,6 +127,21 @@ router.post('/parse', function(req, res, next) {
                     tempFiles.thumb
                   ]
                 ]
+              } else {
+                args = [
+                  'convert', [
+                    tempFiles.full,
+                    '-resize', 
+                    '300x300', 
+                    '-background',
+                    'transparent',
+                    '-gravity',
+                    'center',
+                    '-extent',
+                    '300x300',
+                    tempFiles.thumb
+                  ]
+                ]
               }
               run_cmd(args, function () {
                 storeByFtp(src, index)
