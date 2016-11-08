@@ -110,27 +110,27 @@ router.post('/parse', function(req, res, next) {
             })
 
             function convertImage(src, index) {
-              run_cmd(
-                'magick', [
-                  'convert',
-                  tempFiles.full,
-                  '-resize', 
-                  '300x300', 
-                  '-background',
-                  'transparent',
-                  '-gravity',
-                  'center',
-                  '-extent',
-                  '300x300',
-                  tempFiles.thumb
-                ],
-                function () {
-                  console.log('=============')
-                  console.log(arguments)
-                  console.log('=============')
-                  storeByFtp(src, index)
-                }
-              );
+              var args = []
+              if (process.env.SYSTEM == 'ubuntu') {
+                args = [
+                  'magick', [
+                    'convert',
+                    tempFiles.full,
+                    '-resize', 
+                    '300x300', 
+                    '-background',
+                    'transparent',
+                    '-gravity',
+                    'center',
+                    '-extent',
+                    '300x300',
+                    tempFiles.thumb
+                  ]
+                ]
+              }
+              run_cmd(args, function () {
+                storeByFtp(src, index)
+              })
             }
 
             function storeByFtp(src, index) {
@@ -204,9 +204,9 @@ router.post('/parse', function(req, res, next) {
 })
 
 
-function run_cmd(cmd, args, end) {
+function run_cmd(args, end) {
   var spawn = require('child_process').spawn,
-      child = spawn(cmd, args),
+      child = spawn.apply(this, args),
       me = this;
   child.stdout.on('end', end);
 }
